@@ -43,27 +43,25 @@ page = function() {
     });
     return body(function() {
       script({
-        type: 'text/javascript',
         src: 'http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js'
+      });
+      script({
+        src: '/socket.io/socket.io.js'
       });
       coffeescript(function() {
         return $(function() {
-          return $('form').submit(function(e) {
-            var success;
+          $('form').submit(function(e) {
+            var socket;
             e.preventDefault();
-            success = function(data) {
-              return $('textarea[name=coffee]').text(data.coffee);
-            };
-            $.ajax('/convert', {
-              type: 'POST',
-              contentType: 'application/json',
-              data: JSON.stringify({
-                js: $('textarea[name=javascript]', this).val()
-              }),
-              success: success,
-              dataType: 'json'
+            socket = io.connect();
+            socket.on('result', function(cs) {
+              return $('textarea[name=coffee]').text(cs);
             });
+            socket.emit('convert', $('textarea[name=javascript]', this).val());
             return false;
+          });
+          return $('form a').click(function(e) {
+            return $('textarea').val('');
           });
         });
       });
@@ -100,9 +98,13 @@ page = function() {
             });
           });
           p(function() {
-            return button({
-              style: 'width: 100%'
+            button({
+              style: 'width: 48%'
             }, '<-- CONVERT -->');
+            return a('.button', {
+              href: '#',
+              style: 'width: 48%;text-align: center;'
+            }, '<-- RESET -->');
           });
           return p(function() {
             return textarea({
@@ -131,11 +133,16 @@ app.route('/').methods('GET').html(coffeecup.render(page, {
   coffee: ''
 }));
 
-app.route('/convert').json(function(req, resp) {
-  return req.on('json', function(data) {
-    return resp.end({
-      coffee: js2coffee.build(data.js)
-    });
+app.sockets.on('connection', function(socket) {
+  return socket.on('convert', function(js) {
+    var cs;
+    cs = "";
+    try {
+      cs = js2coffee.build(js);
+    } catch (err) {
+      cs = err.message;
+    }
+    return socket.emit('result', cs);
   });
 });
 

@@ -17,20 +17,19 @@ page = ->
       link rel: 'stylesheet', href: '/stylesheets/layout.css'
       comment '[if lt IE 9]>\r\n\t<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>\r\n<![endif]'
     body ->
-      script type: 'text/javascript', src: 'http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js'
+      script src: 'http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js'
+      script src: '/socket.io/socket.io.js'
       coffeescript ->
         $ ->
           $('form').submit (e) ->
             e.preventDefault()
-            success = (data) -> 
-              $('textarea[name=coffee]').text data.coffee
-            $.ajax '/convert',
-              type: 'POST'
-              contentType: 'application/json'
-              data: JSON.stringify(js: $('textarea[name=javascript]',this).val())
-              success: success
-              dataType: 'json'
+            socket = io.connect()
+            socket.on 'result', (cs) ->
+              $('textarea[name=coffee]').text cs
+            socket.emit 'convert', $('textarea[name=javascript]',this).val()
             false
+          $('form a').click (e) ->
+            $('textarea').val('')
 
       div '.container', ->
         h1 'js2cs'
@@ -46,7 +45,9 @@ page = ->
           p ->
             textarea name: 'javascript', placeholder: '< insert your javascript here >', style: 'height:150px;width:98%', -> @js
           p -> 
-            button style: 'width: 100%', '<-- CONVERT -->'
+            button style: 'width: 48%', '<-- CONVERT -->'
+            a '.button', href: '#', style: 'width: 48%;text-align: center;', '<-- RESET -->'
+
           p ->
             textarea name: 'coffee', placeholder: '< press [convert] and see your coffeescript >', style: 'height:150px;width:98%', -> @coffee
 
@@ -55,8 +56,18 @@ page = ->
 
 
 app.route('/').methods('GET').html coffeecup.render(page, js: '', coffee: '')
-app.route('/convert').json (req, resp) ->
-  req.on 'json', (data) -> resp.end coffee: js2coffee.build(data.js)
+
+app.sockets.on 'connection', (socket) ->
+  socket.on 'convert', (js) ->
+    cs = ""
+    try 
+      cs = js2coffee.build(js)
+    catch err
+      cs = err.message
+    socket.emit 'result', cs
+
+# app.route('/convert').json (req, resp) ->
+#   req.on 'json', (data) -> resp.end coffee: js2coffee.build(data.js)
 
 app.route('/*').files "#{__dirname}/public"
 app.httpServer.listen 3000
