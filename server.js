@@ -1,14 +1,20 @@
-var app, coffeecup, js2coffee, page, tako;
+var app, baseCss, coffeecup, fs, http, io, js2coffee, layoutCss, page, sio, skeletonCss;
 
-require('coffee-script');
+http = require('http');
 
 coffeecup = require('coffeecup');
 
-tako = require('tako');
-
 js2coffee = require('js2coffee');
 
-app = tako();
+fs = require('fs');
+
+baseCss = fs.readFileSync('./public/stylesheets/base.css');
+
+skeletonCss = fs.readFileSync('./public/stylesheets/skeleton.css');
+
+layoutCss = fs.readFileSync('./public/stylesheets/layout.css');
+
+sio = require('socket.io');
 
 page = function() {
   doctype(5);
@@ -128,12 +134,42 @@ page = function() {
   });
 };
 
-app.route('/').methods('GET').html(coffeecup.render(page, {
-  js: '',
-  coffee: ''
-}));
+app = http.createServer(function(req, res) {
+  console.log(req.url);
+  if (req.url === '/') {
+    res.writeHead(200, {
+      'content-type': 'text/html'
+    });
+    return res.end(coffeecup.render(page, {
+      js: '',
+      coffee: ''
+    }));
+  } else if (req.url === '/favicon.ico') {
+    res.writeHead(200, {
+      'content-type': 'text/html'
+    });
+    return res.end();
+  } else if (req.url === '/stylesheets/base.css') {
+    res.writeHead(200, {
+      'content-type': 'text/css'
+    });
+    return res.end(baseCss);
+  } else if (req.url === '/stylesheets/skeleton.css') {
+    res.writeHead(200, {
+      'content-type': 'text/css'
+    });
+    return res.end(skeletonCss);
+  } else if (req.url === '/stylesheets/layout.css') {
+    res.writeHead(200, {
+      'content-type': 'text/css'
+    });
+    return res.end(layoutCss);
+  }
+});
 
-app.sockets.on('connection', function(socket) {
+io = sio.listen(app);
+
+io.sockets.on('connection', function(socket) {
   return socket.on('convert', function(js) {
     var cs;
     cs = "";
@@ -146,6 +182,4 @@ app.sockets.on('connection', function(socket) {
   });
 });
 
-app.route('/*').files("" + __dirname + "/public");
-
-app.httpServer.listen(3000);
+app.listen(3000);

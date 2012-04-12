@@ -1,8 +1,13 @@
-require 'coffee-script'
+http = require 'http'
 coffeecup = require 'coffeecup'
-tako = require 'tako'
+#tako = require 'tako'
 js2coffee = require 'js2coffee'
-app = tako()
+#app = tako()
+fs = require 'fs'
+baseCss = fs.readFileSync './public/stylesheets/base.css'
+skeletonCss = fs.readFileSync './public/stylesheets/skeleton.css'
+layoutCss = fs.readFileSync './public/stylesheets/layout.css'
+sio = require('socket.io')
 
 page = ->
   doctype 5
@@ -41,7 +46,7 @@ page = ->
           script '!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");'
 
         small 'Convert your JavaScript to CoffeeScript'
-        form method: 'POST', action: '/convert', ->
+        form method: 'POST', action: '#', ->
           p ->
             textarea name: 'javascript', placeholder: '< insert your javascript here >', style: 'height:150px;width:98%', -> @js
           p -> 
@@ -55,9 +60,26 @@ page = ->
           a href: 'https://github.com/twilson63/js2cs', 'View Source on Github'
 
 
-app.route('/').methods('GET').html coffeecup.render(page, js: '', coffee: '')
+app = http.createServer (req, res) ->
+  console.log req.url
+  if req.url == '/'
+    res.writeHead 200, 'content-type': 'text/html'
+    res.end coffeecup.render(page, js: '', coffee: '')
+  else if req.url == '/favicon.ico'
+    res.writeHead 200, 'content-type': 'text/html'
+    res.end()
+  else if req.url == '/stylesheets/base.css'
+    res.writeHead 200, 'content-type': 'text/css'
+    res.end baseCss
+  else if req.url == '/stylesheets/skeleton.css'
+    res.writeHead 200, 'content-type': 'text/css'
+    res.end skeletonCss
+  else if req.url == '/stylesheets/layout.css'
+    res.writeHead 200, 'content-type': 'text/css'
+    res.end layoutCss
 
-app.sockets.on 'connection', (socket) ->
+io = sio.listen(app)
+io.sockets.on 'connection', (socket) ->
   socket.on 'convert', (js) ->
     cs = ""
     try 
@@ -66,8 +88,4 @@ app.sockets.on 'connection', (socket) ->
       cs = err.message
     socket.emit 'result', cs
 
-# app.route('/convert').json (req, resp) ->
-#   req.on 'json', (data) -> resp.end coffee: js2coffee.build(data.js)
-
-app.route('/*').files "#{__dirname}/public"
-app.httpServer.listen 3000
+app.listen 3000
