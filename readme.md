@@ -2,6 +2,9 @@
 
 Convert your JavaScript to CoffeeScript
 
+[![build
+status](https://secure.travis-ci.org/twilson63/js2cs.png)](http://travis-ci.org/twilson63/js2cs)
+
 [http://js2cs.nodejitsu.com](http://js2cs.nodejitsu.com)
 
 ## Requirements

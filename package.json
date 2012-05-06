@@ -24,7 +24,8 @@
     "coffeecup": "*",
     "mocha": "*",
     "should": "*",
-    "request": "*"
+    "request": "*",
+    "jsdom": "*"
   },
   "optionalDependencies": {},
   "subdomain": "js2cs"
