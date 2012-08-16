@@ -115,6 +115,7 @@ module.exports = function() {
       script({
         src: '/socket.io/socket.io.js'
       });
+      text('<script type="text/javascript">\n  var _gauges = _gauges || [];\n  (function() {\n    var t   = document.createElement(\'script\');\n    t.type  = \'text/javascript\';\n    t.async = true;\n    t.id    = \'gauges-tracker\';\n    t.setAttribute(\'data-site-id\', \'4fac7fa7f5a1f5632e0000d2\');\n    t.src = \'//secure.gaug.es/track.js\';\n    var s = document.getElementsByTagName(\'script\')[0];\n    s.parentNode.insertBefore(t, s);\n  })();\n</script>');
       return coffeescript(function() {
         return $(function() {
           var socket;

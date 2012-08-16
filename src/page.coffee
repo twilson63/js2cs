@@ -26,7 +26,8 @@ module.exports = ->
         div '.row', -> h3 '.fit', 'News and Updates'
         div '.row', style: 'margin-bottom: 100px;', ->
           div '.four.columns', ->
-            iframe src: 'http://markdotto.github.com/github-buttons/github-btn.html?user=twilson63&repo=js2cs&type=watch', allowtransparency: true, frameborder: "0", scrolling: "0", width: "62px", height: "20px;"
+            text '&nbsp;'
+            #iframe src: 'http://markdotto.github.com/github-buttons/github-btn.html?user=twilson63&repo=js2cs&type=watch', allowtransparency: true, frameborder: "0", scrolling: "0", width: "62px", height: "20px;"
           div '.four.columns', ->
             a '.twitter-share-button', href: 'https://twitter.com/share', 'data-url': 'http://js2cs.nodejitsu.com', 'data-text': 'Convert your javascript to coffeescript! #coffeescript #nodejs', 'Tweet'
             script '!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");'
@@ -37,6 +38,21 @@ module.exports = ->
       script src: 'http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js'
       script src: '/javascripts/fittext.js'
       script src: '/socket.io/socket.io.js'
+      text '''
+      <script type="text/javascript">
+        var _gauges = _gauges || [];
+        (function() {
+          var t   = document.createElement('script');
+          t.type  = 'text/javascript';
+          t.async = true;
+          t.id    = 'gauges-tracker';
+          t.setAttribute('data-site-id', '4fac7fa7f5a1f5632e0000d2');
+          t.src = '//secure.gaug.es/track.js';
+          var s = document.getElementsByTagName('script')[0];
+          s.parentNode.insertBefore(t, s);
+        })();
+      </script>
+      '''
       coffeescript ->
         $ ->
           socket = io.connect()
